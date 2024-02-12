@@ -1,0 +1,192 @@
+:root {
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+    font-size: 2em !important;
+
+	color: #222;
+	background-color: #ffffff;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+}
+
+#app {
+	display: flex;
+	flex-direction: column; 
+}
+
+header {
+	display: flex;
+	justify-content: center; 
+    position: fixed;
+    top: 0; 
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+header nav {
+	display: flex;
+}
+
+header a {
+	color: #fff;
+	padding: 0.75rem;
+	text-decoration: none;
+}
+
+header a.active {
+	background-color: #0005;
+}
+
+header a:hover {
+	background-color: #0008;
+}
+ 
+
+@media (max-width: 639px) {
+	main {
+		margin: 2rem;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		color: #ccc;
+		background-color: #1a1a1a;
+	}
+}
+
+div.numbered-children {
+    counter-reset: child-index; /* Initialize the counter */
+  }
+  div.numbered-children > *
+  {
+    position: relative;
+    display: inline-block;
+  }
+  div.numbered-children > *:before {
+    counter-increment: child-index; /* Increment counter for each child */
+    content: counter(child-index) ; /* Display the counter value */
+    position:absolute;
+    top:0;
+    z-index: 999;
+    left:0;
+    background: white;
+    color:black;
+    font-weight: bold;
+  }
+
+
+.thumbnails {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    cursor: move;
+}
+.thumbnails img {
+    border: 5px solid transparent;
+}
+
+.menu {
+    padding: 10px; 
+    display: grid;
+    grid-template-areas:
+    "open save"
+    "add add" 
+    "record record"
+    "context context"; 
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: min-content;
+    font-size: 26px;
+    grid-gap: 2px  ;
+}
+
+.menu > * {
+    background-color: #222;   
+    display: inline;
+}
+.menu > * > * {
+    display: inline-block;
+}
+
+.menu > .add { grid-area: add;}
+.menu > .open { grid-area: open;}
+.menu > .save { grid-area: save;}
+.menu > .record { grid-area: record;}
+.menu > .context { grid-area: context; background-color: transparent;}
+
+:root {
+    --recording-opacity: 0.3;
+  }
+
+.recording .thumbnails ,
+.recording .leyenda,
+.recording .add ,
+.recording .open ,
+.recording .context,
+.recording .save { 
+    opacity: var(--recording-opacity); 
+    pointer-events: none;
+}
+
+a.delete {
+    color:red;
+}
+a.delete:hover {
+    background-color: red;
+    color:white;;
+}
+
+@keyframes pulseSelection {
+    0% {
+      border-color: red;
+    }
+    50% {
+      border-color: transparent;
+    }
+    100% {
+      border-color: red;
+    }
+  }
+
+.record-button {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 40px;
+    border: 13px solid transparent;
+    background-color: red;
+}
+.record-button > i {
+    font-size: 16em;;
+}
+.recording .record-button {
+    background-color: black;
+    animation: pulseSelection 0.5s ease-in-out infinite ; 
+}
+
+.leyenda {
+    position: fixed;
+    top: 0;
+    right: 0;
+    text-align: right;
+    color: #666;
+    padding: 20px;
+    font-size: .8em;
+}
+.leyenda a {
+    padding: 0;
+    color:blue;
+    text-decoration: underline;
+}
+.leyenda a:hover {
+    background-color: blue;
+    color: white;
+}
