@@ -1,6 +1,6 @@
  
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks'; 
-import Zip from 'JSZip';
+import Zip from 'jszip/dist/jszip';
 import { saveAs } from 'file-saver';
 import Text from "./Texts";
 
