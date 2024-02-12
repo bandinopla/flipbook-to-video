@@ -201,11 +201,11 @@
         }
     };
 	
-	if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-		module.exports = ArrayBufferDataStream;
-	} else {
+	//if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+		//module.exports = ArrayBufferDataStream;
+	//} else {
 		window.ArrayBufferDataStream = ArrayBufferDataStream;
-	}
+	//}
 }());"use strict";
 
 /**
@@ -427,11 +427,11 @@
 		};
 	};
 	
-	if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-		module.exports = BlobBuffer(require('fs'));
-	} else {
+	//if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+		//module.exports = BlobBuffer(require('fs'));
+	//} else {
 		window.BlobBuffer = BlobBuffer(null);
-	}
+	//}
 })();/**
  * WebM video encoder for Google Chrome. This implementation is suitable for creating very large video files, because
  * it can stream Blobs directly to a FileWriter without buffering the entire video in memory.
@@ -1089,9 +1089,9 @@
         };
     };
 
-    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-	    module.exports = WebMWriter(require("./ArrayBufferDataStream"), require("./BlobBuffer"));
-    } else {
+    //if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+	    //module.exports = WebMWriter(require("./ArrayBufferDataStream"), require("./BlobBuffer"));
+    //} else {
 	    window.WebMWriter = WebMWriter(ArrayBufferDataStream, BlobBuffer);
-    }
+    //}
 })();
