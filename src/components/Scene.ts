@@ -8,6 +8,7 @@ import { FlipBook } from 'quick_flipbook';
 import "../capture/download.js";
 import "../capture/webm-writer-0.2.0.js";
 import "../capture/CCapture.js";
+import { GradientTexture } from '../util/GradientTexture.js';
 
 var recordON = false;
 
@@ -27,7 +28,7 @@ export function setupScene( dom:HTMLElement )
     let zoom = 0;
 
     const scene = new THREE.Scene();
-          scene.background = new THREE.Color(0x999999); 
+          scene.background = GradientTexture( "#ccc", "#999999" ); 
 
 //#region setup Light
           const light = new THREE.DirectionalLight( 0xffffff, 4 );

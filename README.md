@@ -5,6 +5,8 @@
 
 Create a Flipbook and export it as a video. It uses [THREE.js](https://github.com/mrdoob/three.js) as 3D engine and [quick_flipbook](https://github.com/bandinopla/quick_flipbook) to generate the flipbook.
 
+[![npm version](https://img.shields.io/npm/v/quick_flipbook.svg?logo=threedotjs)](https://www.npmjs.com/package/quick_flipbook)
+
 ## Motivation
 The idea is to be able to select a bunch of pre-designed pages, setup this 3D book, and capture the interaction with it into a video (you flipping the pages, etc...) and obtain a video that you can use in diferent things.
 

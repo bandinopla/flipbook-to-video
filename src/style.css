@@ -171,13 +171,13 @@ div.numbered-children {
 
 @keyframes pulseSelection {
     0% {
-      border-color: yellow;
+      border-color: red;
     }
     50% {
       border-color: transparent;
     }
     100% {
-      border-color: yellow;
+      border-color: red;
     }
   }
 
@@ -186,7 +186,7 @@ div.numbered-children {
     right: 20px;
     bottom: 20px;
     border-radius: 40px;
-    border: 13px solid transparent;
+    border: 15px solid transparent;
     background-color: red;
 }
 .record-button > i {
