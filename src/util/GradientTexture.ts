@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export function GradientTexture(colorA:string, colorB:string) {
+export function GradientTexture(colorA:string, colorB:string, ratio:number) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -16,7 +16,7 @@ export function GradientTexture(colorA:string, colorB:string) {
     // Create a radial gradient
     const gradient = ctx.createRadialGradient(size / 2, size / 2, size * 0.2, size / 2, size / 2, size * 0.5);
     gradient.addColorStop(0, colorA); // Start color
-    gradient.addColorStop(1, colorB); // End color
+    gradient.addColorStop(ratio, colorB); // End color
 
     // Fill the canvas with the gradient
     ctx.fillStyle = gradient;

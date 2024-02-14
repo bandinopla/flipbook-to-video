@@ -28,10 +28,10 @@ export function setupScene( dom:HTMLElement )
     let zoom = 0;
 
     const scene = new THREE.Scene();
-          scene.background = GradientTexture( "#ccc", "#999999" ); 
+          scene.background = GradientTexture( "#666", "#555", 1 ); 
 
 //#region setup Light
-          const light = new THREE.DirectionalLight( 0xffffff, 4 );
+          const light = new THREE.DirectionalLight( 0xffffff,1 );
  
             light.position.set( .2, 1, 0 );
             light.castShadow = true;
