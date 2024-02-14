@@ -40,6 +40,8 @@ header a {
 	color: #fff;
 	padding: 0.75rem;
 	text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.3s;
 }
 
 header a.active {
@@ -91,10 +93,11 @@ div.numbered-children {
     cursor: move;
 }
 .thumbnails img {
-    border: 5px solid transparent;
+    border: 6px solid transparent;
 }
 
 .menu {
+    width: 250px;
     padding: 10px; 
     display: grid;
     grid-template-areas:
@@ -106,11 +109,15 @@ div.numbered-children {
     grid-auto-rows: min-content;
     font-size: 26px;
     grid-gap: 2px  ;
+    position: fixed;
+    top:0;
+    left: 230px;
 }
 
 .menu > * {
     background-color: #222;   
     display: inline;
+    box-shadow: 1px 3px rgba(0,0,0,0.3);
 }
 .menu > * > * {
     display: inline-block;
@@ -120,8 +127,22 @@ div.numbered-children {
 .menu > .open { grid-area: open;}
 .menu > .save { grid-area: save;}
 .menu > .record { grid-area: record;}
-.menu > .context { grid-area: context; background-color: transparent;}
-
+.menu > .context { 
+    grid-area: context; 
+    background-color: transparent; 
+}
+.menu > .context a {
+    display: block;
+    padding-top: 10px;
+    padding-bottom: 10px; 
+    margin-top: 2px; 
+    background-color: rgba(255,255,255,0.4);
+}
+.menu > .context a:hover {
+    background-color: white;
+    color: #333;
+}
+ 
 :root {
     --recording-opacity: 0.3;
   }
@@ -136,23 +157,27 @@ div.numbered-children {
     pointer-events: none;
 }
 
-a.delete {
-    color:red;
+.menu > .context a.delete {
+    color:red !important;
 }
-a.delete:hover {
+.menu > .context a.delete:hover {
     background-color: red;
-    color:white;;
+    color:white !important;
+}
+.context a.setImg:hover {
+    background-color: white !important;
+    color: black !important;
 }
 
 @keyframes pulseSelection {
     0% {
-      border-color: red;
+      border-color: yellow;
     }
     50% {
       border-color: transparent;
     }
     100% {
-      border-color: red;
+      border-color: yellow;
     }
   }
 
@@ -180,6 +205,8 @@ a.delete:hover {
     color: #666;
     padding: 20px;
     font-size: .8em;
+    background-color: white;;
+    border-radius: 10px;
 }
 .leyenda a {
     padding: 0;

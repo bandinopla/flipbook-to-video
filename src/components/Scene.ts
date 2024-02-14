@@ -27,7 +27,7 @@ export function setupScene( dom:HTMLElement )
     let zoom = 0;
 
     const scene = new THREE.Scene();
-          scene.background = new THREE.Color(0xe0e0e0); 
+          scene.background = new THREE.Color(0x999999); 
 
 //#region setup Light
           const light = new THREE.DirectionalLight( 0xffffff, 4 );
@@ -42,7 +42,7 @@ export function setupScene( dom:HTMLElement )
             light.shadow.bias = -0.02;
 
             scene.add( light );
-            scene.add( new THREE.AmbientLight( 0xffffff) );
+            scene.add( new THREE.AmbientLight( 0xffffff, 2));
 //#endregion
 
 //#region setup camera
@@ -59,7 +59,7 @@ export function setupScene( dom:HTMLElement )
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.setSize( width, height );
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMapping = THREE.NoToneMapping;
         dom.appendChild( renderer.domElement );
 
     const renderPass = new RenderPass( scene, camera );

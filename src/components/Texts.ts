@@ -11,15 +11,22 @@ type Diccionario = {
     btnCloseLabel:string
     controls:string
     emptyZipError:string
+    setToBlank:string
+    nothingToSave:string
+    deletePrompt:string
+    setBlankPrompt:string
+    invalidZipFile:string
+    missingPageError:string
+    setImageIntoBlank:string
 }
 
 const dicc:{[key:string]:Diccionario} = {
     "es": {
         btnOpenLabel:"Abrir",
         btnSaveLabel:"Guardar",
-        btnAddPage:"Agregar nueva página",
+        btnAddPage:"Nueva página",
         btnStartRecordingLabel:"Iniciar grabación",
-        btnDeletePageLabel:"Borrar esta página",
+        btnDeletePageLabel:"Quitar página",
         btnStopRecordingLabel:"Finalizar grabación",
         btnNewLabel:"Nuevo libro",
         btnCloseLabel:"Salir",
@@ -29,14 +36,21 @@ const dicc:{[key:string]:Diccionario} = {
         Presiona <b>Barra Espaciadora</b> para reestablecer el zoom.<br/>
         Presiona la tecla <b>ENTER</b> para Iniciar y/o Detener la grabación.
         `,
-        emptyZipError:"El zip no contiene ninguna imagen .png"
+        emptyZipError:"El zip no contiene ninguna imagen .png",
+        setToBlank:"Poner en blanco",
+        nothingToSave:"No hay nada que guardar. Agregá algunas páginas!",
+        deletePrompt:"¿Quitar la página seleccionada?",
+        setBlankPrompt:"Poner página en blanco? (Se quitará la textura de la página)",
+        invalidZipFile:"El archivo zip que cargaste no es válido (no contiene un flipbook)",
+        missingPageError:"PÁGINA ROTA: \n\nUna página hace referencia a una imagen que no está en el zip: Página [$pag] Imagen [$img]\n\nSe utilizará una imagen en blanco.",
+        setImageIntoBlank:"Cargar imagen a esta página"
     },
     "en":{
         btnOpenLabel:"Open",
         btnSaveLabel:"Save",
-        btnAddPage:"Add new page",
+        btnAddPage:"New page",
         btnStartRecordingLabel:"Start Recording",
-        btnDeletePageLabel:"Delete this page",
+        btnDeletePageLabel:"Remove page",
         btnStopRecordingLabel:"End Recording",
         btnNewLabel:"New Book",
         btnCloseLabel:"Exit",
@@ -46,7 +60,14 @@ const dicc:{[key:string]:Diccionario} = {
         Press <b>Space bar</b> to restore zoom.<br/>
         Press <b>ENTER</b> to start or stop the recording.
         `,
-        emptyZipError:"The zip has no .png image file"
+        emptyZipError:"The zip has no .png image file",
+        setToBlank:"Set to blank page",
+        nothingToSave:"Nothing to save... try adding some pages!",
+        deletePrompt:"Delete currently selected page?",
+        setBlankPrompt:"Turn into a blank page (texture will be removed)",
+        invalidZipFile:"The zip you selected doesn't contain a flipbook in it.",
+        missingPageError:"MISSING PAGE!\n\nA page is referencing an image that is not in the zip: Page [$pag] Image [$img]\n\nA blank page will be used.",
+        setImageIntoBlank:"Set image for this blank page"
     }
 }
 

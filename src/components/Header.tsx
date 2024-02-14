@@ -10,17 +10,21 @@ import 'css.gg/icons/css/software-download.css';
 import 'css.gg/icons/css/camera.css';
 import 'css.gg/icons/css/play-stop-o.css';
 import 'css.gg/icons/css/close.css';
+import 'css.gg/icons/css/math-plus.css'; 
+
+const VERSION = "1.0.0";
 
 interface PageSource { 
     url:string; 
     blob:Blob;
+    fileName:string
 }   
 
 class LocalFile implements PageSource {
 
     readonly url:string;   
 
-    constructor(public readonly blob:Blob) {
+    constructor(public readonly blob:Blob, public readonly fileName:string ) {
         this.url = URL.createObjectURL(blob);    
     } 
 }
@@ -35,10 +39,12 @@ ${ ["https://cloudconvert.com/webm-to-mp4",
 }
 `;
  
+const FLIPBOOKCONFIG = `flipbook-config.json`;
+const VALID_IMAGE_EXTENSIONS = ".png, .jpg, .jpeg";
 
 export function Header() { 
-    const [pages, setPages] = useState<PageSource[]>([]);
-    const [pagesAtStart, setPagesAtStart] = useState<PageSource[]>([]); //used to detect changes
+    const [pages, setPages] = useState<(PageSource|null)[]>([]);
+    const [pagesAtStart, setPagesAtStart] = useState<(PageSource|null)[]>([]); //used to detect changes
 
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
     const [isDragging, setIsDragging] = useState(false);
@@ -47,7 +53,7 @@ export function Header() {
     const timeDisplay = useRef<HTMLElement>(null);
     const recordButtonRef = useRef<HTMLAnchorElement>(null);
     const emptyWorkspace = selectedIndex==-1;
-    const somethingChanged =pagesAtStart.some( (url,i)=>pages[i]!=url );
+    const somethingChanged = pagesAtStart.length!=pages.length || pagesAtStart.some( (url,i)=>pages[i]!=url );
 
     useEffect(()=>{
 
@@ -100,7 +106,7 @@ export function Header() {
     // 
     useLayoutEffect(()=>{ 
 
-        const _pages = pages.map(p=>p.url);
+        const _pages = pages.map(p=>p?.url || "");
 
         if( _pages.length%2 !=0 )
         {
@@ -113,12 +119,15 @@ export function Header() {
     }, [ pages ]);   
 
 
-    const selectPageFile =()=>{  
+    /** 
+     * @param forCurrentIndex if true the image will be loaded into the current index
+     */
+    const selectPageFile =( forCurrentIndex:boolean=false )=>{  
 
         const fileInput = document.createElement("input");
             fileInput.type = "file";
-            fileInput.multiple = true;
-            fileInput.accept = ".png, .jpg, .jpeg";
+            fileInput.multiple = forCurrentIndex? false : true;
+            fileInput.accept = VALID_IMAGE_EXTENSIONS;
             fileInput.style.display = "none";
             document.body.appendChild(fileInput);
             
@@ -126,9 +135,17 @@ export function Header() {
         fileInput.addEventListener("change", (event) => {
             const files = fileInput.files!; 
 
-            for( const file of files )
+            if( forCurrentIndex )
             {
-                pages.push(new LocalFile(file));
+                const file = files[0];
+                pages[ selectedIndex ] = new LocalFile(file, file.name);
+            }
+            else 
+            {
+                for( const file of files )
+                {
+                    pages.push(new LocalFile(file, file.name));
+                }
             }
 
             setPages([ ...pages ]);
@@ -152,26 +169,42 @@ export function Header() {
 
         if( !pages.length )
         {
-            alert("Nothing to save... try adding some pages!");
+            alert( Text.nothingToSave );
             return;
         }
 
         // poner todo en un zip
         const z = new Zip();
+        const index:string[]=[];
         
         for (let i = 0; i < pages.length; i++) 
         {   
-            z.file(`${i+1}.png`, pages[i].blob, { comment:"Un comentario loco"});
+            if( !pages[i] || pages[i]?.url=="" )
+            {
+                index.push("");
+            }
+            else 
+            {
+                let name = `${i+1}.png`;
+
+                z.file(name, pages[i]!.blob );
+                index.push(name);
+            } 
         }
+
+        //
+        z.file(FLIPBOOKCONFIG, JSON.stringify({ 
+            flipbookPages: index,
+            version:VERSION 
+        }));
 
         const blob = await z.generateAsync({type:"blob"});
 
-        saveAs(blob, "example.zip");
+        saveAs(blob, "my-flipbook.zip");
     }
  
     const close = () => {
-
-        console.log("CLOSE ", pages)
+ 
         setSelectedIndex(-1);
         setPages([]);
         setPagesAtStart([]); 
@@ -206,31 +239,78 @@ export function Header() {
             await z.loadAsync(file);
  
             let sources:PageSource[] = [];
+            let config:{[key:string]:any}; 
 
             //
             // for each image in the zip file...
             //
+            try {
             await new Promise( (allDone, oops)=>
             {
                 let ops = Promise.resolve(0);
 
-                z.forEach( (path, file)=>{
-
-                    console.log("OPEN ", file)
-
-                    if( file.name.endsWith(".png") )
+                z.forEach( (path, file)=>{ 
+ 
+                    if( VALID_IMAGE_EXTENSIONS.indexOf( file.name.split(".").pop() )>-1 )
                     {
-                        ops = ops.then( ()=>file.async("blob").then( blob=>sources.push( new LocalFile(blob) ) ) );
+                        ops = ops.then( ()=>file.async("blob").then( blob=>sources.push( new LocalFile(blob, file.name) ) ) );
                     } 
+                    else if(file.name.endsWith(".json"))
+                    {
+                        ops = ops.then( ()=>file.async("text").then( json=>{
+                            config = JSON.parse(json);
+                        } ) );
+                    }
  
                 });
 
-                ops.then( allDone ); 
+                ops.then( ()=>{
+
+                    if(!config || !Array.isArray(config.flipbookPages) || config.version != VERSION )
+                    {
+                        oops( Text.invalidZipFile );
+                        return;
+                    }
+
+                    allDone(true);
+                } ); 
             });
 
-            console.log("OPENED ZIP", sources);
+            //
+            // error during zip reading
+            //
+            }catch(e){
+                alert(e.message??e);
+                return;
+            }
+ 
+            let _pages:(PageSource|null)[] = [];
 
-            if(!sources.length)
+            for (let i = 0; i < config!.flipbookPages.length; i++) 
+            {
+                const pageName = config!.flipbookPages[i];
+
+                if( pageName=="" )
+                {
+                    _pages.push(null);
+                }
+                else 
+                {
+                    let source = sources.find(s=>s.fileName==pageName)  ;
+
+                    if(!source)
+                    {
+                        alert(Text.missingPageError.replace("$pag",(i+1).toString()).replace("$img",pageName) );
+                        _pages.push(null);
+                    }
+                    else 
+                    {
+                        _pages.push(source);
+                    }  
+                } 
+            }
+
+            if(!_pages.length)
             {
                 alert( Text.emptyZipError );
             }
@@ -239,8 +319,8 @@ export function Header() {
                 //
                 // done, set data.
                 //
-                setPagesAtStart([...sources]);
-                setPages(sources); 
+                setPagesAtStart([..._pages]);
+                setPages(_pages); 
                 setSelectedIndex(0); 
             }
 
@@ -296,7 +376,7 @@ export function Header() {
 
     const onClickDeleteSelection = ev => {
         ev.preventDefault();
-        if( confirm("Delete currently selected page?") )
+        if( confirm(Text.deletePrompt) )
         {
             if( selectedIndex==pages.length-1 )
             {
@@ -309,16 +389,25 @@ export function Header() {
             
         }
     }
+
+    const onClickBlankSelection = ev => {
+        if( confirm(Text.setBlankPrompt) )
+        {
+            let p = pages.slice(0);
+            p[selectedIndex]=null;
+            setPages(p);
+        }
+    }
  
 	return (
 		<header ref={myDiv}>
-            <div class={"leyenda"} dangerouslySetInnerHTML={{__html:Text.controls+webmToMp4Links}}>
-                
-            </div>
+            <Leyenda/>
+                 
 			    <div class="numbered-children thumbnails">
 				{
                     pages.map( (source,i) => {
-                        return <div key={i} ><img onMouseOver={onMouseOverThumbnail.bind(null, i)} onMouseDown={onMouseDownThumbnail.bind(null,i)} src={source.url} height={100} width={100} style={{ touchAction:'pan-x', borderColor:i==selectedIndex?"red":"transparent", animation:i==selectedIndex?"pulseSelection 0.5s ease-in-out infinite":"none"}}/></div>
+                        return <div key={i} >
+                            <img onMouseOver={onMouseOverThumbnail.bind(null, i)} onMouseDown={onMouseDownThumbnail.bind(null,i)} src={ source?.url || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAFUlEQVR42mP4DwABDQEB/xlG6wAAAABJRU5ErkJggg==" } height={100} width={100} style={{ touchAction:'pan-x', borderColor:i==selectedIndex?"red":"transparent", animation:i==selectedIndex?"pulseSelection 0.5s ease-in-out infinite":"none"}}/></div>
                     })
                 }
                 </div>
@@ -327,7 +416,7 @@ export function Header() {
 
                     { !emptyWorkspace && <>
                     <a href="#" onClick={()=>selectPageFile()} class={"add"}>
-                        <i class="gg-image"></i> {Text.btnAddPage}
+                        <i class="gg-math-plus"></i> {Text.btnAddPage}
                     </a> 
                     <a href="#" onClick={()=>close()} class={"open"}>
                         <i class="gg-close"></i> {Text.btnCloseLabel}
@@ -360,8 +449,10 @@ export function Header() {
                     </>}
 
                     {
-                        !!pages[selectedIndex] && <div class={"context"} >
+                        pages.length>0 && selectedIndex>-1 && <div class={"context"} >
                             <a href="#" class="delete" onClick={onClickDeleteSelection}>[x] {Text.btnDeletePageLabel}</a>
+                            {pages[selectedIndex] && <a href="#" class="setblank" onClick={onClickBlankSelection}>[ ] {Text.setToBlank}</a>}
+                            {!pages[selectedIndex] && <a href="#" class="setImg" onClick={()=>selectPageFile(true)}>{Text.setImageIntoBlank}</a>}
                         </div>
                     } 
                     
@@ -369,3 +460,20 @@ export function Header() {
 		</header>
 	);
 }  
+
+
+const Leyenda = ()=>{
+
+    const [open, setOpen]=useState(false);
+
+    if(!open )
+    {
+        return <div class={"leyenda"}>
+            <a href="#" onClick={()=>setOpen(true)}>Ver Instrucciones</a>
+        </div>
+    }
+    return <div class={"leyenda"} >
+        <a href="#" onClick={()=>setOpen(false)}>[x] Cerrar</a><hr/>
+        <div dangerouslySetInnerHTML={{__html:Text.controls+webmToMp4Links}}></div>
+    </div>
+}
