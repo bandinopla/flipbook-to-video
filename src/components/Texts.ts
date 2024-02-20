@@ -18,6 +18,9 @@ type Diccionario = {
     invalidZipFile:string
     missingPageError:string
     setImageIntoBlank:string
+    btnAddPageBEFORE:string 
+    btnAddPageAFTER:string
+    btnSeeInstructions:string
 }
 
 const dicc:{[key:string]:Diccionario} = {
@@ -25,7 +28,7 @@ const dicc:{[key:string]:Diccionario} = {
         btnOpenLabel:"Abrir",
         btnSaveLabel:"Guardar",
         btnAddPage:"Nueva página",
-        btnStartRecordingLabel:"Iniciar grabación",
+        btnStartRecordingLabel:"Grabar",
         btnDeletePageLabel:"Quitar página",
         btnStopRecordingLabel:"Finalizar grabación",
         btnNewLabel:"Nuevo libro",
@@ -43,7 +46,10 @@ const dicc:{[key:string]:Diccionario} = {
         setBlankPrompt:"Poner página en blanco? (Se quitará la textura de la página)",
         invalidZipFile:"El archivo zip que cargaste no es válido (no contiene un flipbook)",
         missingPageError:"PÁGINA ROTA: \n\nUna página hace referencia a una imagen que no está en el zip: Página [$pag] Imagen [$img]\n\nSe utilizará una imagen en blanco.",
-        setImageIntoBlank:"Cargar imagen a esta página"
+        setImageIntoBlank:"Cargar imagen a esta página",
+        btnAddPageAFTER:"Agregar página nueva luego de la página actual",
+        btnAddPageBEFORE:"Agregar página nueva adelante de la página actual",
+        btnSeeInstructions:"Ver instrucciones"
     },
     "en":{
         btnOpenLabel:"Open",
@@ -67,7 +73,10 @@ const dicc:{[key:string]:Diccionario} = {
         setBlankPrompt:"Turn into a blank page (texture will be removed)",
         invalidZipFile:"The zip you selected doesn't contain a flipbook in it.",
         missingPageError:"MISSING PAGE!\n\nA page is referencing an image that is not in the zip: Page [$pag] Image [$img]\n\nA blank page will be used.",
-        setImageIntoBlank:"Set image for this blank page"
+        setImageIntoBlank:"Set image for this blank page",
+        btnAddPageAFTER:"Add a new page AFTER the current page",
+        btnAddPageBEFORE:"Add a new page BEFORE the current page",
+        btnSeeInstructions:"See instructions"
     }
 }
 

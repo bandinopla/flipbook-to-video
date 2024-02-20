@@ -12,6 +12,13 @@ import 'css.gg/icons/css/camera.css';
 import 'css.gg/icons/css/play-stop-o.css';
 import 'css.gg/icons/css/close.css';
 import 'css.gg/icons/css/math-plus.css'; 
+import 'css.gg/icons/css/file.css'; 
+import 'css.gg/icons/css/trash.css'; 
+import 'css.gg/icons/css/erase.css'; 
+import 'css.gg/icons/css/image.css'; 
+import 'css.gg/icons/css/arrow-right-r.css'; 
+import 'css.gg/icons/css/record.css'; 
+import 'css.gg/icons/css/info.css'; 
 
 const VERSION = "1.0.0";
 
@@ -47,6 +54,7 @@ ${ ["https://cloudconvert.com/webm-to-mp4",
  
 const FLIPBOOKCONFIG = `flipbook-config.json`;
 const VALID_IMAGE_EXTENSIONS = ".png, .jpg, .jpeg, .gif";
+const WHITE_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=" ;
 
 export function Header() { 
     const [pages, setPages] = useState<(PageSource|null)[]>([]);
@@ -173,8 +181,9 @@ export function Header() {
 
     /** 
      * @param forCurrentIndex if true the image will be loaded into the current index
+     * @param insertDirection 0 file will replace current index. -1 new page will be added BEFORE. 1 = AFTER the current page.
      */
-    const selectPageFile =( forCurrentIndex:boolean=false )=>{  
+    const selectPageFile =( forCurrentIndex:boolean=false, insertDirection:number=0 )=>{  
 
         const fileInput = document.createElement("input");
             fileInput.type = "file";
@@ -190,7 +199,17 @@ export function Header() {
             if( forCurrentIndex )
             {
                 const file = files[0];
-                pages[ selectedIndex ] = new LocalFile(file, file.name);
+                const pageSource = new LocalFile(file, file.name);
+
+                if( insertDirection==0 )
+                {
+                    pages[ selectedIndex ] = pageSource;
+                }
+                else 
+                {
+                    pages.splice(selectedIndex + Math.max(0,insertDirection),0, pageSource);
+                } 
+                
             }
             else 
             {
@@ -204,7 +223,13 @@ export function Header() {
             fileInput.remove();
         }); 
 
-        fileInput.addEventListener("cancel", (event) => fileInput.remove() ); 
+        fileInput.addEventListener("cancel", (event) => {
+            fileInput.remove() 
+            if( !pages.length )
+            {
+                close();
+            }
+        }); 
 
         fileInput.click(); 
 
@@ -214,6 +239,7 @@ export function Header() {
         setSelectedIndex(0);
         setPages([]);
         setPagesAtStart([]);
+        selectPageFile(); // trigger file selection
     }
  
 
@@ -452,59 +478,75 @@ export function Header() {
     }
  
 	return (
-		<header ref={myDiv}>
-            <Leyenda/>
+		<header ref={myDiv} className={isRecording?"recording":""}>
+            {/* <Leyenda/> */}
                  
 			    <div class="numbered-children thumbnails">
 				{
                     pages.map( (source,i) => {
                         return <div key={i} >
-                            <img onMouseOver={onMouseOverThumbnail.bind(null, i)} onMouseDown={onMouseDownThumbnail.bind(null,i)} src={ source?.url || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAFUlEQVR42mP4DwABDQEB/xlG6wAAAABJRU5ErkJggg==" } height={100} width={100} style={{ touchAction:'pan-x', borderColor:i==selectedIndex?"red":"transparent", animation:i==selectedIndex?"pulseSelection 0.5s ease-in-out infinite":"none"}}/></div>
+                            <img onMouseOver={onMouseOverThumbnail.bind(null, i)} onMouseDown={onMouseDownThumbnail.bind(null,i)} src={ source?.url || WHITE_PIXEL} height={100} width={100} style={{ touchAction:'pan-x', borderColor:i==selectedIndex?"red":"transparent", animation:i==selectedIndex?"pulseSelection 0.5s ease-in-out infinite":"none"}}/></div>
                     })
                 }
                 </div>
                 <div class="menu"> 
 
 
-                    { !emptyWorkspace && <>
-                    <a href="#" onClick={()=>selectPageFile()} class={"add"}>
-                        <i class="gg-math-plus"></i> {Text.btnAddPage}
-                    </a> 
-                    <a href="#" onClick={()=>close()} class={"open"}>
-                        <i class="gg-close"></i> {Text.btnCloseLabel}
+                    { !emptyWorkspace && <div className="rightTopMenu">
+
+                    <Leyenda/>
+                    
+                    <a href="#" onClick={()=>close()} class={"open"} title={Text.btnCloseLabel}>
+                        <i class="gg-close"></i>
                     </a> 
                     { somethingChanged && <a href="#" onClick={()=>save()} class={"save"}>
                         <i class="gg-software-download"></i> {Text.btnSaveLabel}
                     </a>}
                     
-                    </>
+                    </div>
                     } 
 
-                    { emptyWorkspace && <>
-                    <a href="#" onClick={()=>newBook()} class={"save"}>
-                        <i class="gg-software-download"></i> {Text.btnNewLabel}
+                    { emptyWorkspace && <div className="centeredMenu">
+                    <a href="#" onClick={()=>newBook()} >
+                        <i class="gg-file"></i> {Text.btnNewLabel}
                     </a> 
-                    <a href="#" onClick={()=>open()} class={"open"}>
+                    <a href="#" onClick={()=>open()}>
                         <i class="gg-software-upload"></i>  {Text.btnOpenLabel}
                     </a>
-                    </>
+                    </div>
                     }
  
                       
 
                     { pages.length>0 && <>
                         <a href="#" class={"record-button"} onClick={recordAction} ref={recordButtonRef}> 
-                        { !isRecording && <><i class="gg-camera"></i> &nbsp;{Text.btnStartRecordingLabel}</>}
+                        { !isRecording && <><i class="gg-record"></i> &nbsp;{Text.btnStartRecordingLabel}</>}
                         { isRecording && <><i class="gg-play-stop-o"></i> &nbsp;{Text.btnStopRecordingLabel} [<span ref={timeDisplay}></span>]</>}
                  
                         </a>
                     </>}
+                    
+                    {/* <a href="#" onClick={()=>selectPageFile()} class={"add"}>
+                        <i class="gg-math-plus"></i> {Text.btnAddPage}
+                    </a>  */}
 
                     {
-                        pages.length>0 && selectedIndex>-1 && <div class={"context"} >
-                            <a href="#" class="delete" onClick={onClickDeleteSelection}>[x] {Text.btnDeletePageLabel}</a>
-                            {pages[selectedIndex] && <a href="#" class="setblank" onClick={onClickBlankSelection}>[ ] {Text.setToBlank}</a>}
-                            {!pages[selectedIndex] && <a href="#" class="setImg" onClick={()=>selectPageFile(true)}>{Text.setImageIntoBlank}</a>}
+                        pages.length>0 && selectedIndex>-1 && <div className="contextualPageMenu">
+ 
+
+                            <a href="#" class="delete" onClick={onClickDeleteSelection} title={Text.btnDeletePageLabel}>
+                            <i class="gg-trash"></i> </a>
+
+                            {pages[selectedIndex] && <a href="#" class="setblank" onClick={onClickBlankSelection} title={Text.setToBlank}><i class="gg-erase"></i> </a>}
+                            { <a href="#" class="setImg" onClick={()=>selectPageFile(true)} title={Text.setImageIntoBlank}><i class="gg-image"></i> </a>}
+
+                            <a href="#" onClick={()=>selectPageFile(true,1)} title={Text.btnAddPageAFTER}>
+                             <i class="gg-file"></i> <i class="gg-math-plus"></i>
+                            </a> 
+
+                            <a href="#" onClick={()=>selectPageFile(true,-1)} title={Text.btnAddPageBEFORE}>
+                            <i class="gg-math-plus"></i> <i class="gg-file"></i>  
+                            </a> 
                         </div>
                     } 
                     
@@ -520,9 +562,9 @@ const Leyenda = ()=>{
 
     if(!open )
     {
-        return <div class={"leyenda"}>
-            <a href="#" onClick={()=>setOpen(true)}>Ver Instrucciones</a>
-        </div>
+        return <a href="#" onClick={()=>setOpen(true)} title={Text.btnSeeInstructions}>
+            <i class="gg-info"></i>
+        </a>
     }
     return <div class={"leyenda"} >
         <a href="#" onClick={()=>setOpen(false)}>[x] Cerrar</a><hr/>

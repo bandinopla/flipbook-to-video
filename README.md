@@ -1,5 +1,7 @@
 ![Logo](./demo.gif)
 # Flipbook to video :tv:
+* EN: Available in english
+* ES: Disponible en español
 
 ## :rocket: [ Open Editor](https://bandinopla.github.io/flipbook-to-video/) :rocket:
 
