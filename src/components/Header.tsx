@@ -1,5 +1,6 @@
  
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks'; 
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks'; 
+import {THREE_GetGifTexture} from "threejs-gif-texture"; 
 import Zip from 'jszip/dist/jszip';
 import { saveAs } from 'file-saver';
 import Text from "./Texts";
@@ -29,6 +30,11 @@ class LocalFile implements PageSource {
     } 
 }
 
+ 
+const $gifFileName2Loader : { [fileName:string]:Promise<THREE.Texture> } = {};
+const $gifFileName2Texture : { [fileName:string]:THREE.Texture } = {};
+
+
 const webmToMp4Links = `
 <br/><br/><b><u>WEBM --&gt; MP4</u></b><br/>
 ${ ["https://cloudconvert.com/webm-to-mp4", 
@@ -40,7 +46,7 @@ ${ ["https://cloudconvert.com/webm-to-mp4",
 `;
  
 const FLIPBOOKCONFIG = `flipbook-config.json`;
-const VALID_IMAGE_EXTENSIONS = ".png, .jpg, .jpeg";
+const VALID_IMAGE_EXTENSIONS = ".png, .jpg, .jpeg, .gif";
 
 export function Header() { 
     const [pages, setPages] = useState<(PageSource|null)[]>([]);
@@ -106,7 +112,40 @@ export function Header() {
     // 
     useLayoutEffect(()=>{ 
 
-        const _pages = pages.map(p=>p?.url || "");
+        emitPages(); 
+
+        //
+        // check if we need to load some gifs...
+        //
+        const gifs = pages.filter( f=>f?.fileName.endsWith(".gif") );
+
+        if( gifs.length )
+        { 
+            Promise.allSettled(
+                gifs.map( f=>loadGifTexture(f!) )
+            )
+            .then( results => emitPages())
+        }
+
+    }, [ pages ]);  
+    
+    const emitPages = () => {
+
+        const _pages = pages.map(p=>{
+
+            // check if this fileName has Gif data...
+            const possiblyGifTexture = $gifFileName2Texture[ p!.fileName ];
+
+            if( possiblyGifTexture )
+            {
+                return possiblyGifTexture;
+            }
+            else 
+            {
+                return p?.url || "";
+            }
+
+        });
 
         if( _pages.length%2 !=0 )
         {
@@ -115,8 +154,21 @@ export function Header() {
 
         const event = new CustomEvent("on:pages", { detail: _pages });
         document.body.dispatchEvent(event);
+    }
 
-    }, [ pages ]);   
+    /**
+     * Loads the gif as a Texture and creates the dictionary entry to locate the Texture vía fileName
+     */
+    const loadGifTexture = (f:PageSource) => {
+
+        $gifFileName2Loader[ f.fileName ] ??= THREE_GetGifTexture( f.url ); // tal vez falle porque la lib le va a intentar hacer un fetch... 
+        
+        return $gifFileName2Loader[ f.fileName ].then( texture => {
+
+            $gifFileName2Texture[f.fileName ] = texture;
+
+        });
+    }
 
 
     /** 
@@ -185,7 +237,7 @@ export function Header() {
             }
             else 
             {
-                let name = `${i+1}.png`;
+                let name = `${i+1}.${pages[i]!.fileName}`;
 
                 z.file(name, pages[i]!.blob );
                 index.push(name);
